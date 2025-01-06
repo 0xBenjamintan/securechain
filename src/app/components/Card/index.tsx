@@ -47,7 +47,7 @@ const Card = ({
           ) : null}
         </p>
         <p>{description}</p>
-        <div className="card-actions justify-end mt-4">
+        <div className="card-actions justify-center mt-4">
           {tags.map((tag, index) => (
             <div key={index} className="badge badge-outline">
               {tag}

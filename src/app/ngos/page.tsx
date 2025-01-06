@@ -1,50 +1,96 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Card from "../components/Card";
-import { useWalletBalance } from "thirdweb/react";
 import { arbitrumSepolia } from "thirdweb/chains";
 import { client } from "@/app/client";
+import { prepareContractCall, getContract } from "thirdweb";
+import {
+  useSendTransaction,
+  useActiveAccount,
+  useWalletBalance,
+  useReadContract,
+} from "thirdweb/react";
+import { ethers } from "ethers";
+// List of NGOs' information
 
-const ngos = [
-  {
-    id: 1,
-    description:
-      "UNICEF works globally to ensure every child has access to education, healthcare, and emergency aid, improving lives in over 190 countries. They focus on creating a brighter future for vulnerable children and their families.",
-    tags: ["Children", "Education", "Health"],
-    imageUrl: "/unicef.png",
-    imageAlt: "UNICEF",
-    isNew: true,
-    title: "UNICEF",
-    walletAddress: "0xd47B2Bc991865a39adf3616d8E5aC3A9290Fb155",
-    // totalDonations: ,
-    yourDonations: 1000,
-  },
-  {
-    id: 2,
-    title: "MSF",
-    description:
-      "Doctors Without Borders (MSF) delivers medical aid to those affected by crises, providing care in conflict zones, natural disasters, and epidemics. Their work saves lives in some of the world's most challenging environments.",
-    tags: ["Health", "Humanitarian", "Disaster Relief"],
-    imageUrl: "/msf.jpg",
-    imageAlt: "MSF",
-    isNew: true,
-    walletAddress: "0xC7fa499e2D42CC3377DC2d4e0C4D646CDc2D7e2e",
-  },
-  {
-    id: 3,
-    title: "WWF",
-    description:
-      "WWF focuses on conserving nature and protecting endangered species, working toward a sustainable future for people and the planet. Their efforts include tackling climate change and promoting biodiversity.",
-    tags: ["Environment", "Wildlife", "Conservation"],
-    imageUrl: "/wwf.jpg",
-    imageAlt: "WWF",
-    walletAddress: "0xd9127DD7c1AFF86b808161Da1BDd1A93e3b56b20",
-    isNew: true,
-  },
-];
+const contract = getContract({
+  client,
+  chain: arbitrumSepolia,
+  address: "0xE017969C889930357dfd34BB016350228722E16A",
+});
 
 export default function Ngo() {
+  const donor = useActiveAccount();
+  const { data: userUnicefDonation, isPending: unicefIsPending } =
+    useReadContract({
+      contract,
+      method:
+        "function getUserDonation(address donor, address recipient) view returns (uint256)",
+      params: [
+        donor?.address || "",
+        "0xd47B2Bc991865a39adf3616d8E5aC3A9290Fb155",
+      ],
+    });
+
+  const { data: userMsfDonation, isPending: msfIsPending } = useReadContract({
+    contract,
+    method:
+      "function getUserDonation(address donor, address recipient) view returns (uint256)",
+    params: [
+      donor?.address || "",
+      "0xC7fa499e2D42CC3377DC2d4e0C4D646CDc2D7e2e",
+    ],
+  });
+
+  const { data: userWwfDonation, isPending: wwfIsPending } = useReadContract({
+    contract,
+    method:
+      "function getUserDonation(address donor, address recipient) view returns (uint256)",
+    params: [
+      donor?.address || "",
+      "0xd9127DD7c1AFF86b808161Da1BDd1A93e3b56b20",
+    ],
+  });
+  const ngos = [
+    {
+      id: 1,
+      description:
+        "UNICEF works globally to ensure every child has access to education, healthcare, and emergency aid, improving lives in over 190 countries. They focus on creating a brighter future for vulnerable children and their families.",
+      tags: ["Children", "Education", "Health"],
+      imageUrl: "/unicef.png",
+      imageAlt: "UNICEF",
+      isNew: true,
+      title: "UNICEF",
+      walletAddress: "0xd47B2Bc991865a39adf3616d8E5aC3A9290Fb155",
+      yourDonations: userUnicefDonation || 0,
+    },
+    {
+      id: 2,
+      title: "MSF",
+      description:
+        "Doctors Without Borders (MSF) delivers medical aid to those affected by crises, providing care in conflict zones, natural disasters, and epidemics. Their work saves lives in some of the world's most challenging environments.",
+      tags: ["Health", "Humanitarian", "Disaster Relief"],
+      imageUrl: "/msf.jpg",
+      imageAlt: "MSF",
+      isNew: true,
+      walletAddress: "0xC7fa499e2D42CC3377DC2d4e0C4D646CDc2D7e2e",
+      yourDonations: userMsfDonation || 0,
+    },
+    {
+      id: 3,
+      title: "WWF",
+      description:
+        "WWF focuses on conserving nature and protecting endangered species, working toward a sustainable future for people and the planet. Their efforts include tackling climate change and promoting biodiversity.",
+      tags: ["Environment", "Wildlife", "Conservation"],
+      imageUrl: "/wwf.jpg",
+      imageAlt: "WWF",
+      walletAddress: "0xd9127DD7c1AFF86b808161Da1BDd1A93e3b56b20",
+      yourDonations: userWwfDonation || 0,
+      isNew: true,
+    },
+  ];
+  // Get the balance of each NGO's wallet
   const unicefBalance =
     useWalletBalance({
       address: ngos[0].walletAddress || "",
@@ -63,6 +109,35 @@ export default function Ngo() {
       chain: arbitrumSepolia,
       client,
     }).data?.displayValue || "0";
+
+  const { mutate: sendTransaction } = useSendTransaction();
+
+  const onClick = async () => {
+    try {
+      // Prepare the transaction
+      const transaction = await prepareContractCall({
+        contract, // Your contract instance from thirdweb
+        method: "function donate(address recipient) payable",
+        params: [selectedNgo], // Recipient address as a parameter
+        value: ethers.parseEther(amount), // Specify the donation amount in Ether (e.g., 0.1 ETH)
+      });
+
+      // Send the transaction
+      sendTransaction(transaction, {
+        onSuccess: () => {
+          console.log("Donation successful!");
+        },
+        onError: (error) => {
+          console.error("Donation failed:", error);
+        },
+      });
+    } catch (error) {
+      console.error("Error preparing the transaction:", error);
+    }
+  };
+
+  const [selectedNgo, setSelectedNgo] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
 
   return (
     <div>
@@ -95,7 +170,9 @@ export default function Ngo() {
                   ? Number(msfBalance)
                   : Number(wwfBalance)
               }
-              yourDonations={ngo.yourDonations || 0}
+              yourDonations={Number(
+                ethers.formatEther(ngo.yourDonations || "0")
+              )}
             />
           ))}
         </div>
@@ -107,7 +184,11 @@ export default function Ngo() {
           </h2>
 
           <div className="form-control w-full mb-4">
-            <select className="select select-bordered w-full" defaultValue="">
+            <select
+              className="select select-bordered w-full"
+              defaultValue=""
+              onChange={(e) => setSelectedNgo(e.target.value)}
+            >
               <option disabled value="">
                 Select an NGO
               </option>
@@ -126,10 +207,14 @@ export default function Ngo() {
               className="input input-bordered w-full"
               min="0"
               step="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
             />
           </div>
 
-          <button className="btn btn-primary w-full">Send Donation</button>
+          <button className="btn btn-primary w-full" onClick={onClick}>
+            Send Donation
+          </button>
         </div>
       </div>
     </div>
