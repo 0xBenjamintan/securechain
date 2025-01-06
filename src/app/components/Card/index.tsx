@@ -9,6 +9,8 @@ interface CardProps {
   description: string;
   tags: string[];
   walletAddress: string;
+  totalDonations: number;
+  yourDonations: number;
 }
 
 const Card = ({
@@ -19,6 +21,8 @@ const Card = ({
   description,
   tags,
   walletAddress,
+  totalDonations,
+  yourDonations,
 }: CardProps) => {
   return (
     <div className="card bg-base-100 w-96 shadow-xl">
@@ -49,6 +53,14 @@ const Card = ({
               {tag}
             </div>
           ))}
+        </div>
+        <div className="flex flex-col justify-between mt-4">
+          <p className="text-sm text-gray-500">
+            Total Donations: {totalDonations} ETH
+          </p>
+          <p className="text-sm text-gray-500">
+            You have donated: {yourDonations} ETH
+          </p>
         </div>
       </div>
     </div>

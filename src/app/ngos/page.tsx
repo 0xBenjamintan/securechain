@@ -1,6 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
 import React from "react";
 import Card from "../components/Card";
+import { useWalletBalance } from "thirdweb/react";
+import { arbitrumSepolia } from "thirdweb/chains";
+import { client } from "@/app/client";
 
 const ngos = [
   {
@@ -13,6 +17,8 @@ const ngos = [
     isNew: true,
     title: "UNICEF",
     walletAddress: "0xd47B2Bc991865a39adf3616d8E5aC3A9290Fb155",
+    // totalDonations: ,
+    yourDonations: 1000,
   },
   {
     id: 2,
@@ -38,7 +44,26 @@ const ngos = [
   },
 ];
 
-const page = () => {
+export default function Ngo() {
+  const unicefBalance =
+    useWalletBalance({
+      address: ngos[0].walletAddress || "",
+      chain: arbitrumSepolia,
+      client,
+    }).data?.displayValue || "0";
+  const msfBalance =
+    useWalletBalance({
+      address: ngos[1].walletAddress || "",
+      chain: arbitrumSepolia,
+      client,
+    }).data?.displayValue || "0";
+  const wwfBalance =
+    useWalletBalance({
+      address: ngos[2].walletAddress || "",
+      chain: arbitrumSepolia,
+      client,
+    }).data?.displayValue || "0";
+
   return (
     <div>
       <div className="relative">
@@ -63,6 +88,14 @@ const page = () => {
               title={ngo.title}
               description={ngo.description}
               tags={ngo.tags}
+              totalDonations={
+                ngo.id === 1
+                  ? Number(unicefBalance)
+                  : ngo.id === 2
+                  ? Number(msfBalance)
+                  : Number(wwfBalance)
+              }
+              yourDonations={ngo.yourDonations || 0}
             />
           ))}
         </div>
@@ -74,8 +107,8 @@ const page = () => {
           </h2>
 
           <div className="form-control w-full mb-4">
-            <select className="select select-bordered w-full">
-              <option disabled selected>
+            <select className="select select-bordered w-full" defaultValue="">
+              <option disabled value="">
                 Select an NGO
               </option>
               {ngos.map((ngo) => (
@@ -101,6 +134,4 @@ const page = () => {
       </div>
     </div>
   );
-};
-
-export default page;
+}
