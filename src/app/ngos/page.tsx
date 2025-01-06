@@ -67,6 +67,38 @@ const page = () => {
           ))}
         </div>
       </div>
+      <div className="container mx-auto px-8 lg:px-16 py-12 text-black">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-2xl font-bold mb-6 text-center">
+            Who do you want to donate to?
+          </h2>
+
+          <div className="form-control w-full mb-4">
+            <select className="select select-bordered w-full">
+              <option disabled selected>
+                Select an NGO
+              </option>
+              {ngos.map((ngo) => (
+                <option key={ngo.id} value={ngo.walletAddress}>
+                  {ngo.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-control w-full mb-6">
+            <input
+              type="number"
+              placeholder="Enter amount in ETH"
+              className="input input-bordered w-full"
+              min="0"
+              step="0.01"
+            />
+          </div>
+
+          <button className="btn btn-primary w-full">Send Donation</button>
+        </div>
+      </div>
     </div>
   );
 };
