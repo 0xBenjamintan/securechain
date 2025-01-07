@@ -52,7 +52,7 @@ const page = () => {
                       href="https://metamask.io"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-orange-500 hover:text-orange-800 delay-100"
+                      className="text-orange-500 hover:text-orange-800 transition-all duration-300"
                     >
                       https://metamask.io
                     </a>
@@ -115,20 +115,20 @@ const page = () => {
         </p>
       </div>
       <div className="container mx-auto px-8 lg:px-16 py-12 text-black">
-        <h2 className="text-2xl font-bold mb-4">Introducing Etherscan</h2>
+        <h2 className="text-2xl font-bold mb-4">Introducing Arbiscan</h2>
         <img
-          src="/etherscan.png"
-          alt="Etherscan"
-          className="w-[50%] mb-6 rounded-lg justify-center items-center flex mx-auto"
+          src="/arbiscan.png"
+          alt="EthersArbiscancan"
+          className="w-[50%] my-10 rounded-lg justify-center items-center flex mx-auto"
         />
         <p className="text-lg text-justify leading-relaxed mb-6">
-          Etherscan is a blockchain explorer that provides complete transparency
-          and accountability for all transactions on the Ethereum network.
-          Whether you&apos;re a donor or an NGO, Etherscan ensures you can
-          verify every step of your contributions.
+          Arbiscan is a blockchain explorer that provides complete transparency
+          and accountability for all transactions on the Arbitrum network.
+          Whether you&apos;re a donor or an NGO, Arbiscan ensures you can verify
+          every step of your contributions.
         </p>
         <p className="text-lg text-justify leading-relaxed mb-6">
-          On Etherscan, you can:
+          On Arbiscan, you can:
           <ul className="list-disc list-inside">
             <li>
               <b>Track Transactions</b>: Use your wallet address or transaction
@@ -146,9 +146,18 @@ const page = () => {
           </ul>
         </p>
         <p className="text-lg text-justify leading-relaxed mb-6">
-          By integrating Etherscan into your experience, SecureChain Donations
+          By integrating Arbiscan into your experience, SecureChain Donations
           guarantees that your donations are fully traceable, secure, and
-          tamper-proof. Visit Etherscan.io to explore more about it.
+          tamper-proof. Visit{" "}
+          <a
+            href="https://arbiscan.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 underline hover:text-blue-900 transition-all duration-300"
+          >
+            Arbiscan
+          </a>{" "}
+          to explore more about it.
         </p>
       </div>
     </div>

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Card from "../components/Card";
 import { arbitrumSepolia } from "thirdweb/chains";
 import { client } from "@/app/client";
-import { prepareContractCall, getContract } from "thirdweb";
+import { prepareContractCall, getContract, sendTransaction } from "thirdweb";
 import {
   useSendTransaction,
   useActiveAccount,
@@ -12,7 +12,7 @@ import {
   useReadContract,
 } from "thirdweb/react";
 import { ethers } from "ethers";
-// List of NGOs' information
+import { ToastContainer, toast } from "react-toastify";
 
 const contract = getContract({
   client,
@@ -22,6 +22,8 @@ const contract = getContract({
 
 export default function Ngo() {
   const donor = useActiveAccount();
+  const currentActiveWallet = useActiveAccount();
+
   const { data: userUnicefDonation, isPending: unicefIsPending } =
     useReadContract({
       contract,
@@ -110,7 +112,7 @@ export default function Ngo() {
       client,
     }).data?.displayValue || "0";
 
-  const { mutate: sendTransaction } = useSendTransaction();
+  // const { mutate: sendTransaction } = useSendTransaction();
 
   const onClick = async () => {
     try {
@@ -121,18 +123,63 @@ export default function Ngo() {
         params: [selectedNgo], // Recipient address as a parameter
         value: ethers.parseEther(amount), // Specify the donation amount in Ether (e.g., 0.1 ETH)
       });
+      toast.info("Transaction Pending", {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
 
       // Send the transaction
-      sendTransaction(transaction, {
-        onSuccess: () => {
-          console.log("Donation successful!");
-        },
-        onError: (error) => {
-          console.error("Donation failed:", error);
-        },
+      if (!currentActiveWallet) {
+        throw new Error("No wallet connected");
+      }
+
+      const { transactionHash } = await sendTransaction({
+        transaction,
+        account: currentActiveWallet,
       });
+      console.log("Transaction successful with hash:", transactionHash);
+      toast.success(
+        <div>
+          Transaction successful with hash:
+          <br />
+          <a
+            href={`https://sepolia.arbiscan.io/tx/${transactionHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 underline hover:text-blue-900 transition-all duration-300"
+          >
+            https://sepolia.arbiscan.io/tx/{transactionHash}
+          </a>
+        </div>,
+        {
+          position: "bottom-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
     } catch (error) {
-      console.error("Error preparing the transaction:", error);
+      console.error("Error sending transaction:", error);
+      toast.error("Error sending transaction", {
+        position: "bottom-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
   };
 
@@ -216,6 +263,18 @@ export default function Ngo() {
             Send Donation
           </button>
         </div>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </div>
     </div>
   );
